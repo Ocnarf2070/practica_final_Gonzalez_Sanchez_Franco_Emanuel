@@ -1,0 +1,9 @@
+Análisis estadístico para el residuo
+==================================================
+  Media  : 0.13
+  Desviación Estándar : 3.22
+  Asimetría   : -0.05 => Asimetría negativa
+  Curtosis   : -0.06 => Curva Platicúrtica
+--------------------------------------------------
+  Test de normalidad Shapiro-Wilk o Jarque-Bera (p-value)  : 0.58 => Se acepta normalidad
+  ADF Test para verificar estacionariedad (p-value)  : 0.00 => Se acepta estacionariedad
