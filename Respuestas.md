@@ -55,20 +55,26 @@ Añade aqui tu descripción y analisis:
 
 **Pregunta 3.2** — Copia aquí los cuatro coeficientes ajustados por tu función y compáralos con los valores de referencia del enunciado.
 
-| Parametro | Valor real | Valor ajustado |
+| Parámetro | Valor real | Valor ajustado |
 |-----------|-----------|----------------|
-| β₀        | 5.0       |                |
-| β₁        | 2.0       |                |
-| β₂        | -1.0      |                |
-| β₃        | 0.5       |                |
-
-> _Escribe aquí tu respuesta_
+| β₀        | 5.0       | 4.864995       |
+| β₁        | 2.0       | 2.063618       |
+| β₂        | -1.0      | -1.117038      |
+| β₃        | 0.5       | 0.438517       |
 
 **Pregunta 3.3** — ¿Qué valores de MAE, RMSE y R² has obtenido? ¿Se aproximan a los de referencia?
 
-> _Escribe aquí tu respuesta_
+Los valores obtenidos son los siguientes:
 
-**Pregunta 3.4* — Compara los resultados con la reacción logística anterior para tu dataset y comprueba si el resultado es parecido. Explica qué ha sucedido. 
+| Medida | Valor referencia| Valor obtenido |
+|--------|-----------------|----------------|
+| MAE    | $1.20 (\pm 0.2)$| 1.166462       |
+| RMSE   | $1.50 (\pm 0.2)$| 1.461243       |
+| $R^2$  |$0.80 (\pm 0.05)$| 0.689672       |
+
+Como se puede ver, tanto en el MAE como en el RMSE se aproximan al valor de referencia, aunque no se incluya en el rango de error esperado. En cuanto al coeficiente de error es mucho menor al esperado, incluso con el rango de error. 
+
+**Pregunta 3.4** — Compara los resultados con la reacción logística anterior para tu dataset y comprueba si el resultado es parecido. Explica qué ha sucedido. 
 
 > _Escribe aquí tu respuesta_
 

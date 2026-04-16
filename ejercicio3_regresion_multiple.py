@@ -87,10 +87,10 @@ def regresion_lineal_multiple(X_train, y_train, X_test):
 
     # TODO: Paso 2 — Calcular los coeficientes β con la fórmula OLS
     # β = (XᵀX)⁻¹ Xᵀy
-    X_t = X_train_b.transpose()
+    X_t = X_train_b.T
     a_m = X_t @ X_train_b
-    a2_m, _ , _, _ = np.linalg.lstsq(a_m, X_t, rcond=None)
-    coefs = a2_m @ y_train  # ← Reemplaza None con tu implementación
+    b_m = X_t @ y_train
+    coefs = np.linalg.lstsq(a_m, b_m, rcond=None)[0] # ← Reemplaza None con tu implementación
 
     # TODO: Paso 3 — Añadir columna de unos a X_test de la misma forma
     n = X_test.shape[0]
@@ -98,7 +98,7 @@ def regresion_lineal_multiple(X_train, y_train, X_test):
     X_test_b = np.hstack([ones, X_test])  # ← Reemplaza None con tu implementación
 
     # TODO: Paso 4 — Calcular predicciones ŷ = X_test_b · β
-    y_pred = X_test_b @ coefs  # ← Reemplaza None con tu implementación
+    y_pred = X_test_b.dot(coefs)  # ← Reemplaza None con tu implementación
 
     return coefs, y_pred
 
