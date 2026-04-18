@@ -11,8 +11,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_sco
 SEMILLA = 42
 
 
-def init_dataset(file: str) -> pd.DataFrame:
-    df = pd.read_parquet(file)
+def __preprocessing(df:pd.DataFrame, var_objetivo: str) -> tuple:
     # Se ve que hay un tipo booleano, que es valido para la columna 'explicit', pero se va a cambiar a int para poder tratar mejor  
     # este dato en siguientes secciones
     df['explicit'] = df['explicit'].astype(int)
@@ -21,7 +20,22 @@ def init_dataset(file: str) -> pd.DataFrame:
     # Debido a la cantidad de valores únicos presentes (aprox. 150 valores)
     df['track_genre'] = LabelEncoder().fit_transform(df['track_genre'])
     df.drop(columns=["track_id", "artists", "album_name", "track_name"], inplace=True)
-    return df
+    
+    # Se sacan los valores de la variable objetivo y las variables a usar en la regresión
+    y = df[var_objetivo].values
+    X = df.drop(columns=var_objetivo).values
+
+    #Se realiza un escalado estandarizado para tener una consistencia entre todas las variables
+    X_standard = StandardScaler()
+    y_standard = StandardScaler()
+    X_std = X_standard.fit_transform(X)
+    y_std = y_standard.fit_transform(y[:, np.newaxis]).flatten()
+
+    #Se divide tanto la X como la y para una parte de entrenamiento y otra para el test
+    X_train, X_test, y_train, y_test = train_test_split(X_std, y_std, test_size=0.2, random_state=SEMILLA)
+  
+    return df, X_train, X_test, y_train, y_test 
+    
 
 def __residuos(y_pred_train, y_pred_test,y_train,y_test):
     residual_train = y_train - y_pred_train
@@ -41,6 +55,7 @@ def __residuos(y_pred_train, y_pred_test,y_train,y_test):
     plt.savefig("output/ej2_residuos.png", dpi=300, bbox_inches='tight')
 
 def __metricas(df:pd.DataFrame, modelo: LinearRegression, X_train:np.array, y_train:np.array, X_test: np.array, y_test: np.array):
+    #Calculamos como de bien ha ido la regresión usando el conjunto de el test como el entretenimiento
     y_pred_train = modelo.predict(X_train)
     MAE_train = mean_absolute_error(y_train, y_pred_train)
     RMSE_train = root_mean_squared_error(y_train, y_pred_train)
@@ -61,37 +76,38 @@ def __metricas(df:pd.DataFrame, modelo: LinearRegression, X_train:np.array, y_tr
         f.write(f"\tMAE: {MAE_test}\n")
         f.write(f"\tRMSE: {RMSE_test}\n")
         f.write(f"\tR²: {R2_test}\n")
-
-    coef_df = pd.DataFrame({
-        'Feature': df.drop(columns='popularity').columns,
-        'Coefficient': modelo.coef_
-    })
-    print(coef_df.sort_values(by='Coefficient', ascending=False)[:10])
+    
     __residuos(y_pred_train, y_pred_test, y_train, y_test)
 
-
-    
-
 def linear_regression(df:pd.DataFrame, var_objetivo:str):
-    y = df[var_objetivo].values
-    X = df.drop(columns=var_objetivo).values
-    X_standard = StandardScaler()
-    y_standard = StandardScaler()
-    X_std = X_standard.fit_transform(X)
-    y_std = y_standard.fit_transform(y[:, np.newaxis]).flatten()
-    X_train, X_test, y_train, y_test = train_test_split(X_std, y_std, test_size=0.2, random_state=SEMILLA)
-  
+    df, X_train, X_test, y_train, y_test = __preprocessing(df, var_objetivo)
     np.random.seed(SEMILLA)
     lr = LinearRegression()
     lr.fit(X_train, y_train)
+
+    # Revisamos cuales son los features que han salido 
+    coef_df = pd.DataFrame({
+        'Feature': df.drop(columns=var_objetivo).columns,
+        'Coefficient': lr.coef_,
+        'Absolute': np.abs(lr.coef_)
+    })
+    # Y los ordenamos cuales son los más importantes, independientemente que sean
+    # positivos o negativos
+    print(coef_df.sort_values(by='Absolute', ascending=False)[:10])
+
     __metricas(df, lr, X_train, y_train, X_test, y_test)
     
-
-
+def init_dataset(file: str) -> pd.DataFrame:
+    if '.csv' in file:
+        return pd.read_csv(file)
+    elif '.parquet' in file:
+        return pd.read_parquet(file)
+    else:
+        raise Exception("Format not implemented")
+    
 def main():
     df = init_dataset("data/dataset_spotify_wo_outliers.parquet")
     linear_regression(df, 'popularity')
-
 
 
 if __name__ == "__main__":
