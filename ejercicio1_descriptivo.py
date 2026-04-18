@@ -91,9 +91,12 @@ def __histogram_plot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols
     flat_axes = np.ravel(axes)
 
     for ax, col in zip(flat_axes, cols):
-        # No tiene sentido tener varios bins si solamente son muy pocos valores únicos o son binarios
-        n_bins_aux = min(dataframe[col].nunique(), n_bins)
-        sns.histplot(dataframe[col], ax=ax, bins=n_bins_aux)
+        # Se comprueba si la columna esta formados por integer con pocas variables, ya que no tiene sentido 
+        # hacer un histograma continuo con columnas de pocas variables discretas
+        if dataframe[col].dtype == np.int64 and dataframe[col].nunique() < n_bins:
+            sns.histplot(dataframe[col], ax=ax, discrete=True)
+        else:
+            sns.histplot(dataframe[col], ax=ax, bins=n_bins)
         # Si hay valores muy irregulares, se va a hacer log del conteo
         if log_scale: 
              ax.set_yscale('log')
@@ -120,10 +123,14 @@ def __boxplot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols: int =
 def __outliers(dataframe: pd.DataFrame, cols:list = None):
     print("Outliers")
     if cols is None: cols = dataframe.columns
+    set_rows = set()
     for col in cols:
-         z_score = zscore(dataframe[col])
-         outliers = dataframe[np.abs(z_score)>3]
-         print(f"Outliers en {col}: {len(outliers)} ({100*len(outliers)/len(dataframe[col]):.2f}%)")
+        z_score = zscore(dataframe[col])
+        outliers = dataframe[np.abs(z_score)>3]
+        print(f"Outliers en {col}: {len(outliers)} ({100*len(outliers)/len(dataframe[col]):.2f}%)")
+        set_rows.update(list(outliers.index))
+    return dataframe.drop(list(set_rows))
+    
 
 
 def descripcion_estadistica(dataframe: pd.DataFrame):
@@ -132,8 +139,8 @@ def descripcion_estadistica(dataframe: pd.DataFrame):
     numeric_cols = __statistics(dataframe)
     __histogram_plot(dataframe,'output/ej1_histogramas.png', numeric_cols, log_scale=True, figsize=(20,10), n_bins=30)
     __boxplot(dataframe,'output/ej1_boxplots.png', numeric_cols, figsize=(10,20))
-    __outliers(dataframe,numeric_cols)
-    return numeric_cols
+    dataframe = __outliers(dataframe,numeric_cols)
+    return dataframe, numeric_cols
 
 def variables_categoricas(dataframe: pd.DataFrame):
     print("Análisis variables categóricas")
@@ -165,16 +172,29 @@ def correlations(dataframe: pd.DataFrame):
     plt.tight_layout()
     plt.savefig('output/ej1_heatmap_correlacion.png', dpi=300, bbox_inches='tight')
     
+    cols_numerical = corr.columns
+    fig, axes = plt.subplots(5, 3, figsize=(15,30), layout='constrained', sharey=True)
+
+    flat_axes = np.ravel(axes)
+    for ax, col in zip(flat_axes, cols_numerical[1:]):
+        sns.scatterplot(dataframe, x=col, y='popularity', ax=ax)
+        ax.set_title(f"{col.replace('_',' ').capitalize()}")
+        ax.set_ylabel('popularity')
+    fig.suptitle('Comparación entre variable objetivo y las demás', fontsize=16)
+    plt.savefig('output/ej1_objetive_vs_rest.png', dpi=300, bbox_inches='tight')
 
 def main():
     df = pd.read_parquet("data/dataset_spotify.parquet") 
     resumen_estructural(df)
     print('-'*50)
-    descripcion_estadistica(df)
+    df, _ = descripcion_estadistica(df)
+    df.to_parquet("data/dataset_spotify_wo_outliers.parquet", compression='brotli')
     print('-'*50)
     variables_categoricas(df)
     print('-'*50)
     correlations(df)
+
+
 
 if __name__ == '__main__':
     main()
