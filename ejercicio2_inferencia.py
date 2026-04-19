@@ -13,7 +13,9 @@ SEMILLA = 42
 
 def __preprocessing(df:pd.DataFrame, var_objetivo: str) -> tuple:
     """
-    Método privado para el preprocesamiento de los datos.
+    Método privado para el preprocesamiento de los datos. Este preprocesamiento consiste en el cambio de 
+    tipos adecuados, realizar Encoders de valores categóricos, eliminación de columnas no necesarias,
+    estandarización de las variables y separación del conjunto en dos (Train y Test).
 
     Parámetros
     ----------
@@ -52,7 +54,18 @@ def __preprocessing(df:pd.DataFrame, var_objetivo: str) -> tuple:
     return df, X_train, X_test, y_train, y_test 
     
 
-def __residuos(y_pred_train, y_pred_test,y_train,y_test):
+def __residuos(y_pred_train: np.array, y_pred_test: np.array, y_train: np.array, y_test:np.array):
+    """
+    Método privado para la representación del residuo entre la predicción y el valor real
+    tanto para el conjunto de Entrenamiento como en el de Test.
+
+    Parámetros
+    ----------
+    y_pred_train, y_pred_test: np.array — Array que contiene las predicciones del conjunto correspondiente.
+    y_train, y_test: np.array — Array que contiene los valores reales del conjunto correspondiente
+
+    """
+    
     residual_train = y_train - y_pred_train
     residual_test = y_test - y_pred_test
     plt.figure(figsize=(10,5))
@@ -70,6 +83,20 @@ def __residuos(y_pred_train, y_pred_test,y_train,y_test):
     plt.savefig("output/ej2_residuos.png", dpi=300, bbox_inches='tight')
 
 def __metricas(df:pd.DataFrame, modelo: LinearRegression, X_train:np.array, y_train:np.array, X_test: np.array, y_test: np.array):
+    """
+    Método privado para la obtención de las métricas MAE, RMSE y Coeficiente de determinación tanto para
+    los conjuntos de Entrenamiento como de Test. También realiza el análisis y representación del residuo
+    de las predicciones y los valores reales.
+
+    Parámetros
+    ----------
+    df: pd.DataFrame — El dataframe en el que se va a realizar el análisis
+    modelo: LinearRegression — El modelo de la Regresión Lineal entrenada
+    X_train, y_train: np.array — Arrays perteneciente al conjunto de Entrenamiento que contiene los valores de los parámetros y los valores de la variable objetivo
+    X_test, y_test: np.array — Arrays perteneciente al conjunto de Test que contiene los valores de los parámetros y los valores de la variable objetivo
+
+    """
+    
     #Calculamos como de bien ha ido la regresión usando el conjunto de el test como el entretenimiento
     y_pred_train = modelo.predict(X_train)
     MAE_train = mean_absolute_error(y_train, y_pred_train)
@@ -95,6 +122,18 @@ def __metricas(df:pd.DataFrame, modelo: LinearRegression, X_train:np.array, y_tr
     __residuos(y_pred_train, y_pred_test, y_train, y_test)
 
 def linear_regression(df:pd.DataFrame, var_objetivo:str):
+    """
+    Función que realiza la Regresión linear del dataframe pasado y su variable objetivo. 
+    Para ello realiza primero el preprocesamiento de los datos, después el entrenamiento 
+    de la Regresión Lineal, y por último el análisis con sus métricas del modelo obtenido.
+    
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe el cual queremos realizar la Regresión Lineal
+    var_objetivo: str — Nombre de la variable objetivo
+
+    """
+
     df, X_train, X_test, y_train, y_test = __preprocessing(df, var_objetivo)
     np.random.seed(SEMILLA)
     lr = LinearRegression()
@@ -113,6 +152,17 @@ def linear_regression(df:pd.DataFrame, var_objetivo:str):
     __metricas(df, lr, X_train, y_train, X_test, y_test)
     
 def init_dataset(file: str) -> pd.DataFrame:
+    """
+    Carga el dataset indicado, realizando la carga correcta si es tipo csv o parquet.
+
+    Parámetros
+    ----------
+    file: str — Texto que indica la ubicación del fichero a cargar
+
+    Retorna
+    ---------
+    df: pd.DataFrame — El dataframe del fichero cargado con los datos.
+    """
     if '.csv' in file:
         return pd.read_csv(file)
     elif '.parquet' in file:

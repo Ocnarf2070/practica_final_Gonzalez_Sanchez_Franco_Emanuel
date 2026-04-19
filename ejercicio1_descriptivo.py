@@ -306,11 +306,31 @@ def correlations(dataframe: pd.DataFrame, var_objetivo:str):
     fig.suptitle('Comparación entre variable objetivo y las demás', fontsize=16)
     plt.savefig('output/ej1_objetive_vs_rest.png', dpi=300, bbox_inches='tight')
 
+def init_dataset(file: str) -> pd.DataFrame:
+    """
+    Carga el dataset indicado, realizando la carga correcta si es tipo csv o parquet.
+
+    Parámetros
+    ----------
+    file: str — Texto que indica la ubicación del fichero a cargar
+
+    Retorna
+    ---------
+    df: pd.DataFrame — El dataframe del fichero cargado con los datos.
+    """
+    if '.csv' in file:
+        return pd.read_csv(file)
+    elif '.parquet' in file:
+        return pd.read_parquet(file)
+    else:
+        raise Exception("Format not implemented")
+
 def main():
-    df = pd.read_parquet("data/dataset_spotify.parquet") 
+    df = init_dataset("data/dataset_spotify.parquet") 
     resumen_estructural(df)
     print('-'*50)
     df, _ = descripcion_estadistica(df,var_objetivo='popularity')
+    # Se va a guardar el dataframe sin los outliers para recuperarlo en el Ejercicio 2
     df.to_parquet("data/dataset_spotify_wo_outliers.parquet", compression='brotli')
     print('-'*50)
     variables_categoricas(df)
