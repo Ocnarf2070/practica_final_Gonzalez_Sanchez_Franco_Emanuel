@@ -6,13 +6,195 @@
 
 ## Ejercicio 1 — Análisis Estadístico Descriptivo
 ---
-Añade aqui tu descripción y analisis:
+El _dataset_ analizado proviene de _Hugging Face_ llamado [spotify-track-dataset](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset). Dentro hay dos tipos de ficheros: uno en _.csv_ y otro en _.parquet_. El que se ha cogido ha sido  `0000.parquet`, el cual se ha procesado previamente por el código `parquet_processing.py` para obtener nuestro fichero en `data/dataset_spotify.parquet`. El fichero original es de tamaño `13.6MB` el cual al realizar el código para el procesado se obtiene un fichero de `6.1MB` de memoria física. Tras su carga, la memoria RAM ocupada es de `27.18135 MB`.\
+Este _dataset_ se centra en `11400 canciones` extraídas de la base de datos de Spotify, la cual incluye 125 diferentes géneros musicales y algunas de sus características auditivas. El dataset contiene las siguientes `20 columnas`:
+  - **track_id** (str): ID de Spotify de cada canción.
+  - **artists** (str): Sus artistas. Si hay más de uno, se separan con `;`.
+  - **album_name** (str): El nombre del album en el que aparece.
+  - **track_name** (str): El nombre de la canción.
+  - **popularity** (int64): Evaluado del 0 a 100, siendo 100 el más popular, es un valor calculado por el algoritmo de Spotify y basado en mayormente en el número de reproducciones totales y recientes. `Esta va a ser la variable objetivo debido a que tiene sentido saber que popular puede ser una nueva canción dependiendo de las demás variables`.
+  - **duration_ms** (int64): Duración de la canción en milisegundos.
+  - **explicit** (bool): Indicador de presencia de letra explicita en la canción.
+  - **danceability** (float64): Describe cuán adecuada es una canción para ser bailada, en base a la combinación del tempo, la estabilidad rítmica, la intensidad del compás y su uniformidad generalizada. Comprende entre 0.0 a 1.0.
+  - **energy** (float64): Representa una medida de la intensidad de una canción. Comprende entre 0.0 y 1.0.
+  - **key** (int64): Representa la tonalidad de la canción, la cual esta codificada siendo 0 Do, 2 Re, y asi sucesivamente.
+  - **loudness** (float64): Los decibelios en una canción.
+  - **mode** (int64): Representación la modalidad de una cación, siendo 1 Mayor y 0 Menor.
+  - **speechiness** (float64): Detecta la presencia de palabras habladas. Se representa del 0.0 al 1.0.
+  - **acousticness** (float64): Medida entre 0.0 y 1.0 indicando cuán acústico es la canción.
+  - **instrumentalness** (float64): Medida entre 0.0 y 1.0 indicando con 1 la ausencia de vocales.
+  - **liveness** (float64): Medida entre 0.0 y 1.0 indicando si hay presencia de voces de un público de fondo.
+  - **valence** (float64): Medida entre 0.0 y 1.0 que indica la positividad que tiene una canción.
+  - **tempo** (float64): El estimado BPM que tiene una canción. Cuanto mayor es el valor, más rápido es el ritmo de la canción. 
+  - **time_signature** (int64): Un compás estimado. Su rango normal es de 3 a 7, significando compases de 3/4 a 7/4.
+  - **track_genre** (str): El género de la canción.
+
+Durante el análisis de valores nulos en la tabla, se ha visto que hay solo una canción que en las columnas de 'artist', 'album_name' y 'track_name' están nulos. Tras ver su 'track_id' se ha procedido a ver si en alguna otra fila existente con ese mismo id que estuviera relleno. Tras el análisis, no se ha encontrado otra fila igual, así que se ha decidido mantener esa fila ya que son columnas que no nos dan muchos datos para el resto del análisis y para la Regresión Lineal.\
+También se ha percibido la existencia de filas completamente duplicadas, las cuales se han eliminado ya que son datos superfluos.
+
+### Estadísticos descriptivos de variables numéricas
+
+|                  | count  | mean         | median   | std          | variance          | Q1        | Q3        | min     | max       |
+|------------------|--------|--------------|----------|--------------|-------------------|-----------|-----------|---------|-----------|
+| popularity       | 113550 | 33.32410     | 35.0     | 22.28400     | 496.57120         | 17.0      | 50.0      | 0.0     | 100.0     |
+| duration_ms      | 113550 | 228079.36220 | 213000.0 | 106414.78260 | 11324006218.02770 | 174180.25 | 261587.75 | 0.0     | 5237295.0 |
+| danceability     | 113550 | 0.56700      | 0.58     | 0.17340      | 0.03010           | 0.456     | 0.695     | 0.0     | 0.985     |
+| energy           | 113550 | 0.64210      | 0.685    | 0.25110      | 0.06300           | 0.473     | 0.854     | 0.0     | 1.0       |
+| key              | 113550 | 5.30950      | 5.0      | 3.56010      | 12.67440          | 2.0       | 8.0       | 0.0     | 11.0      |
+| loudness         | 113550 | -8.24340     | -6.997   | 5.01140      | 25.11390          | -9.9978   | -5.001    | -49.531 | 4.532     |
+| mode             | 113550 | 0.63790      | 1.0      | 0.48060      | 0.23100           | 0.0       | 1.0       | 0.0     | 1.0       |
+| speechiness      | 113550 | 0.08470      | 0.0489   | 0.10580      | 0.01120           | 0.0359    | 0.0845    | 0.0     | 0.965     |
+| acousticness     | 113550 | 0.31410      | 0.168    | 0.33190      | 0.11020           | 0.0168    | 0.596     | 0.0     | 0.996     |
+| instrumentalness | 113550 | 0.15570      | 0.000041 | 0.30920      | 0.09560           | 0.0       | 0.0487    | 0.0     | 1.0       |
+| liveness         | 113550 | 0.21360      | 0.132    | 0.19050      | 0.03630           | 0.098     | 0.273     | 0.0     | 1.0       |
+| valence          | 113550 | 0.47420      | 0.464    | 0.25920      | 0.06720           | 0.26      | 0.683     | 0.0     | 0.995     |
+| tempo            | 113550 | 122.17590    | 122.02   | 29.97290     | 898.36450         | 99.2965   | 140.0738  | 0.0     | 243.372   |
+| time_signature   | 113550 | 3.90420      | 4.0      | 0.43210      | 0.18670           | 4.0       | 4.0       | 0.0     | 5.0       |
+
+Como se puede ver en la tabla anterior, la mayoría de las variables numéricas comprenden entre 0 y 1. Si nos fijamos en las medianas y en la media, se puede apreciar que en el dataset se podría esperar de que haya normalmente canciones con un indice intermedio de _'danceability'_ y las cuales tienen una Intensidad considerable. Aun así hay una contradicción en cuanto se puede esperar música con poca voz, pero también con pocos instrumentos, lo cual no tendría sentido en el aspecto de que de normal si no hay voz, pues se espera más instrumentos, y viceversa. También es raro de ver que la media de la Popularidad sea tan baja. Sin embargo, con la cantidad de datos manejadas, no es viable que más de 100000 canciones sean medianamente populares.\
+Si nos centramos en la variable objetivo (_'popularity'_), tiene un **rango intercuartil** de `33.0` el cual sería 1/3 del rango entre 0 a 100. Por lo que la concentración de los datos es dentro de un rango muy bajo. En cuanto a su **Coeficiente de asimetría**, se obtiene un `0.04224`, lo cual indica una asimetría positiva muy pequeña. En cuanto a su **curtosis**, el valor es de `-0.924066`, por lo que es una Curva Platicúrtica considerable.
+
+![histograma](output/ej1_histogramas.png)\
+Fijándonos en los histogramas de las variable numéricas, se aprecian estos tipos de distribuciones:
+- **Distribución estándar**, las cuales presentan esta forma _'popularity'_, _'danceability'_, _'loudness'_, _'tempo'_, muy levemente _'valence'_, y a mitad en _'energy'_
+- **Distribución exponencial**, las cuales presentas esta forma _'duration_ms'_, _'acousticness'_ y _'liveness'_. Si se ignora los picos en la derecha, también serían _'speechiness'_ y _'instrumentalness'_.
+- **Distribución Bernoulli** para la de _'mode'_.
+- **Distribución multimodal** para las variables de _'key'_ y _'time_signature'_.
+
+![boxplot](output/ej1_boxplots.png)\
+Si vemos como son sus _boxplots_, se puede apreciar que hay varias variables que presentan una cantidad considerable de _outliers_. Sin embargo en ciertos casos no nos pueden indicar certeramente que son _outliers_ debido a que no siguen una distribución normal.
+
+Por esto, en cuanto a los outliers, se ha utilizado el método de **_z-score_** debido a que, como se ve en la gráfica de los histogramas, muchas de las variables no siguen una distribución estándar. Las variables que han salido al final que contenían son:
+| Variable       | _Outliers_ | Porcentaje     |
+|----------------|------------|----------------|
+| duration_ms    | 965        | 0.85%          |
+| danceability   | 157        | 0.14%          |
+| loudness       | 2465       | 2.17%          |
+| speechiness    | 2073       | 1.83%          |
+| liveness       | 3628       | 3.20%          |
+| tempo          | 201        | 0.18%          |
+| time_signature | 1130       | 1.00%          |
+
+A pesar de que sea una cantidad muy pequeña, en muchos casos tiene sentido eliminarlas, como son en el tempo o time_signature, las cuales no tiene sentido que tengan valor de 0, porque significarían que son canciones sin sonidos o sonidos audibles. Igualmente, se ha procedido eliminar todo estos _outliers_ ya que al final van a generar más ruido que ayudar al entrenamiento de la Regresión Lineal.
+
+### Variables categóricas
+En las siguientes representaciones no se van a poner completad debido que, a excepción del genero y _'explicit'_ que son 125 y 2 variables únicas, los valores únicos sobrepasan de los miles.
+
+| track_id               | $F_a$ | $F_r$    |
+|------------------------|-------|----------|
+| 6S3JlDAGk3uu3NtZbPnuhS | 9     | 0.000086 |
+| 2kkvB3RNRzwjFdGhaUA0tz | 8     | 0.000077 |
+| 2Ey6v4Sekh3Z0RUSISRosD | 8     | 0.000077 |
+| 2vU6bm5hVF2idVknGzqyPL | 7     | 0.000067 |
+| 4GPQDyw9hC1DiZVh0ouDVL | 7     | 0.000067 |
+| ..                     |       |          |
+| 2C3TZjDRiAzdyViavDJ217 | 1     | 0.000010 |
+| 1hIz5L4IB9hN3WRYPOCGPw | 1     | 0.000010 |
+| 6x8ZfSoqDjuNa5SVP5QjvX | 1     | 0.000010 |
+| 2e6sXL2bYv4bSz6VTdnfLs | 1     | 0.000010 |
+| 2hETkH7cOfqmz3LqZDHZf5 | 1     | 0.000010 |
+
+En esta tabla se puede apreciar que hay una canción en concreto que aparecen en varios album, o pueden pertenecer a más de un género musical.
+
+| artists                              | $F_a$ | $F_r$    |
+|--------------------------------------|-------|----------|
+| The Beatles                          | 270   | 0.002589 |
+| George Jones                         | 257   | 0.002465 |
+| Stevie Wonder                        | 235   | 0.002254 |
+| Ella Fitzgerald                      | 221   | 0.002120 |
+| Linkin Park                          | 213   | 0.002043 |
+| ...                                  |       |          |
+| Bethel Music;John Wilds              | 1     | 0.000010 |
+| Bethel Music;Molly Skaggs            | 1     | 0.000010 |
+| Cuencos Tibetanos Sonidos Relajantes | 1     | 0.000010 |
+| Bryan & Katie Torwalt;Brock Human    | 1     | 0.000010 |
+| Jesus Culture                        | 1     | 0.000010 |
+
+En esta tabla se ve que el artista solitario, y sin contar que haya hecho con otras personas, curiosamente sean `Los Beatles`.
+
+| album_name                                                                                    | $F_a$ | $F_r$    |
+|-----------------------------------------------------------------------------------------------|-------|----------|
+| Alternative Christmas 2022                                                                    | 195   | 0.001870 |
+| Feliz Cumpleaños con Perreo                                                                   | 175   | 0.001678 |
+| Metal                                                                                         | 140   | 0.001343 |
+| Halloween con perreito                                                                        | 118   | 0.001132 |
+| Halloween Party 2022                                                                          | 113   | 0.001084 |
+| ...                                                                                           |       |          |
+| The Light Meets The Dark                                                                      | 1     | 0.000010 |
+| HUMAN (Deluxe) [Live]                                                                         | 1     | 0.000010 |
+| #20 Sueños Vividos - Música Intrumental Suave 2018 para Dormir Bien y Relajarse Profundamente | 1     | 0.000010 |
+| Frecuencias Álmicas en 432hz (Solo Piano)                                                     | 1     | 0.000010 |
+| Revelation Songs                                                                              | 1     | 0.000010 |
+
+En esta tabla es curioso que las canciones de navidad o de festividades con cierto ritmo musical sean de la que más canciones incluyan.
+
+| track_name                     | $F_a$ | $F_r$    |
+|--------------------------------|-------|----------|
+| Run Rudolph Run                | 151   | 0.001448 |
+| Halloween                      | 87    | 0.000834 |
+| Frosty The Snowman             | 80    | 0.000767 |
+| Little Saint Nick - 1991 Remix | 74    | 0.000710 |
+| Christmas Time                 | 72    | 0.000691 |
+| ...                            |       |          |
+| Frecuencia Álmica, Pt. 4       | 1     | 0.000010 |
+| Sleep My Little Boy            | 1     | 0.000010 |
+| Water Into Light               | 1     | 0.000010 |
+| Miss Perfumado                 | 1     | 0.000010 |
+| Barbincor                      | 1     | 0.000010 |
+
+Y por la misma razón que la anterior, que las primeros nombres que sean de temática de festividad es interesante.
+
+| track_genre | $F_a$ | $F_r$    |
+|-------------|-------|----------|
+| rock        | 996   | 0.009552 |
+| mandopop    | 994   | 0.009533 |
+| country     | 993   | 0.009523 |
+| house       | 991   | 0.009504 |
+| deep-house  | 989   | 0.009485 |
+| ...         |       |          |
+| ambient     | 666   | 0.006387 |
+| piano       | 644   | 0.006176 |
+| classical   | 576   | 0.005524 |
+| sleep       | 250   | 0.002398 |
+| comedy      | 164   | 0.001573 |
+
+En cuanto al genero musical, se puede ver que lo que más abundan son tipo `rock` o `pop`.
+
+| explicit | $F_a$ | $F_r$    |
+|----------|-------|----------|
+| False    | 95710 | 0.917905 |
+| True     | 8560  | 0.082095 |
+
+Es normal que la mayoría de las canciones intente ser lo menos explicitas posibles, ya que así llegaría a más audiencia.
+
+En este apartado, se va a ver el histograma de 'track_genre' debido a que es el más interesante a analizar, ya que en las demás siguen como una distribución exponencial, y es la que menos elementos únicos contiene.
+
+![hist_track](output/ej1_categoricas_track_genre.png)\
+Esta gráfica junto a la tabla anteriormente vista, se puede ver que la gran parte de los más representativos no hay una diferencia enorme. Si que se puede concluir que la moda es el `rock`, pero hasta casi los  últimos géneros menos representativos, se podría considerar una distribución uniforme. Aun así, no se podría considerar balanceada, ya que hay ciertos elementos que aparecen más que otros.
+
+## Correlaciones
+> ![correlaciones](output/ej1_heatmap_correlacion.png)
+
+Según la gráfico con las correlaciones, se puede apreciar que hay dos pares de valores que destacan, los cuales serían:
+ - _'loudness'_ y _'energy'_ com un 0.77, el cual tiene sentido que cuanto más ruidosa es una música, más intensa sea.
+ - _'accoustiness'_ y _'energy'_ con un -0.73, el cual tiene sentido que cuanto más intensa sea una canción, tenga una armonía o sea una música más suave.
+
+No se aprecia en ningún par sean multicolineal, ya que ninguno llega a límite de superar 0.9 en su puntuación. Aun así el primer par expuesto anteriormente habría que tener cuidado, ya que si que es un valor muy alto para poder indicar multicolinealidad.
+
+En cuanto a la variable objetivo (_'popularity'_), las tres variables con mayor correlación con la objetivo son:
+ - **_Instrumentalness_** con un -0.10
+ - **_Loudness_** con un 0.06
+ - **_Valence_** con un -0.05
+
+Fijándonos en esta parte, que las mayores correlaciones con la variable objetivo llegue a rozar a 0.10 no es buena señal que la solución pueda ser lineal. Si se ven las gráficas que se muestran a continuación, se puede aprecia que, sin contar con su propia variable, en la mayoría de los casos es una nube de puntos sin ninguna dirección o un posible indice de recta. 
+
+> ![graf_par](output/ej1_objetive_vs_rest.png)
 
 ---
 
 **Pregunta 1.1** — ¿De qué fuente proviene el dataset y cuál es la variable objetivo (target)? ¿Por qué tiene sentido hacer regresión sobre ella?
 
-> El dataset proviene de _Hugging Face_ llamado [spotify-track-dataset](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset). Este dataset contiene datos relevantes y propiedades físicas especificas de las canciones que hay dentro de Spotify. Dentro hay dos tipos de ficheros: uno en _.csv_ y otro en _.parquet_. El que se ha cogido ha sido  _0000.parquet_, el cual se ha procesado previamente por el código `parquet_processing.py` para obtener nuestro fichero en `data/dataset_spotify.parquet`. 
+> El _dataset_ proviene de _Hugging Face_ llamado [spotify-track-dataset](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset). Este dataset contiene datos relevantes y propiedades físicas especificas de las canciones que hay dentro de Spotify. Dentro hay dos tipos de ficheros: uno en _.csv_ y otro en _.parquet_. El que se ha cogido ha sido  `0000.parquet`, el cual se ha procesado previamente por el código `parquet_processing.py` para obtener nuestro fichero en `data/dataset_spotify.parquet`. \
 > La variable objetivo va a ser `popularity` debido a que es el que más sentido tiene a analizar si lo que queremos saber si, queriendo crear una nueva canción, cual podría ser su popularidad mediante sus características.
 
 **Pregunta 1.2** — ¿Qué distribución tienen las principales variables numéricas y has encontrado outliers? Indica en qué variables y qué has decidido hacer con ellos.
@@ -92,7 +274,7 @@ Top 10 influencia de las variables:
 Como se ve en los resultados tanto de la gráfica como de las métricas, el entrenamiento con una Regresión lineal no es la adecuada. Sin duda alguna el modelo ha sufrido un grave problema de subajuste. Como era esperable, las variables más influyentes en nuestro modelo son las mismas que se había obtenido en la gráfica de correlaciones.
 
 En conclusión, el resultado del modelo ha sido muy malo, pero ya en el Ejercicio 1 con las correlaciones y como estaban distribuidos los datos de 'popularity' con las otras columnas, era esperable que se pudiera conseguir un buen modelo. Es probable que nuestra solución no sea usando una Regresión Lineal.\
-Se podría mejorar nuestro modelo viendo cambiando de variable objetivo. Un posible candidato podría ser _'danceability'_, la cual indica lo adecuado que es una canción para ser bailado en base a su tempo, la estabilidad rítmica, la fuerza rítmica y 
+Se podría mejorar nuestro modelo viendo cambiando de variable objetivo. Un posible candidato podría ser _'danceability'_, la cual indica lo adecuado que es una canción para ser bailado en base a su tempo, la estabilidad rítmica, la intensidad del compás y 
 su uniformidad generalizada. Por lo tanto, se podría analizar si nuevas canciones puedan usarse en, por ejemplo, discotecas, las cuales se busca canciones bailables. Esta variable, si se ve el mapa de calor de las correlaciones, tiene mejores correlaciones que _'popularity'_ por lo que nos daría un mejor modelo.
 
 ### Modelo usando _danceability_

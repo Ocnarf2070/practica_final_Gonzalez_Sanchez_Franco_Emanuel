@@ -66,7 +66,7 @@ def __type_kurtosis(kurtosis: float) -> str:
         if kurtosis > 0: return "Curva Leptocúrtica"
         return "Curva Platicúrtica"
 
-def __statistics(dataframe:pd.DataFrame, file: str = 'output/ej1_descriptivo.csv'):
+def __statistics(dataframe:pd.DataFrame, var_objetivo:str, file: str = 'output/ej1_descriptivo.csv'):
     df_st = dataframe.describe()
     df_st.loc['median'] = np.median(dataframe[df_st.columns].values, axis=0)
     df_st.loc['variance'] = np.var(dataframe[df_st.columns].values, axis=0)
@@ -74,11 +74,11 @@ def __statistics(dataframe:pd.DataFrame, file: str = 'output/ej1_descriptivo.csv
     print("Tabla estadística descriptiva:")
     print(df_st.T)
     print()
-    print("Rango intercuartílico de la variable objetivo (popularity):", iqr(dataframe['popularity']))
-    asimetria = skew(dataframe['popularity'])
-    print(f"Coeficiente de asimetría en popularity: {asimetria:.5f}\nTipo de asimetría: {__type_asymmetry(asimetria)}")
-    curtosis = kurtosis(dataframe['popularity'])
-    print(f"Curtosis en popularity: {curtosis:.5f}\nTipo de curtosis: {__type_kurtosis(curtosis)}")
+    print(f"Rango intercuartílico de la variable objetivo ({var_objetivo}):", iqr(dataframe[var_objetivo]))
+    asimetria = skew(dataframe[var_objetivo])
+    print(f"Coeficiente de asimetría en {var_objetivo}: {asimetria:.5f}\nTipo de asimetría: {__type_asymmetry(asimetria)}")
+    curtosis = kurtosis(dataframe[var_objetivo])
+    print(f"Curtosis en {var_objetivo}: {curtosis:.5f}\nTipo de curtosis: {__type_kurtosis(curtosis)}")
     print()
     return df_st.columns
 
@@ -133,10 +133,10 @@ def __outliers(dataframe: pd.DataFrame, cols:list = None):
     
 
 
-def descripcion_estadistica(dataframe: pd.DataFrame):
+def descripcion_estadistica(dataframe: pd.DataFrame, var_objetivo:str):
     print("Estadísticos descriptivos de variables numéricas")
     print("="*50)
-    numeric_cols = __statistics(dataframe)
+    numeric_cols = __statistics(dataframe, var_objetivo)
     __histogram_plot(dataframe,'output/ej1_histogramas.png', numeric_cols, log_scale=True, figsize=(20,10), n_bins=30)
     __boxplot(dataframe,'output/ej1_boxplots.png', numeric_cols, figsize=(10,20))
     dataframe = __outliers(dataframe,numeric_cols)
@@ -158,7 +158,7 @@ def variables_categoricas(dataframe: pd.DataFrame):
         plt.tight_layout()
         plt.savefig(f'output/ej1_categoricas_{col}.png', dpi=150, bbox_inches='tight')
 
-def correlations(dataframe: pd.DataFrame):
+def correlations(dataframe: pd.DataFrame, var_objetivo:str):
     corr = dataframe.corr(numeric_only=True)
     plt.figure(figsize=(10,10))
     ax = sns.heatmap(
@@ -176,10 +176,9 @@ def correlations(dataframe: pd.DataFrame):
     fig, axes = plt.subplots(5, 3, figsize=(15,30), layout='constrained', sharey=True)
 
     flat_axes = np.ravel(axes)
-    for ax, col in zip(flat_axes, cols_numerical[1:]):
-        sns.scatterplot(dataframe, x=col, y='popularity', ax=ax)
+    for ax, col in zip(flat_axes, cols_numerical):
+        sns.scatterplot(dataframe, x=col, y=var_objetivo, ax=ax)
         ax.set_title(f"{col.replace('_',' ').capitalize()}")
-        ax.set_ylabel('popularity')
     fig.suptitle('Comparación entre variable objetivo y las demás', fontsize=16)
     plt.savefig('output/ej1_objetive_vs_rest.png', dpi=300, bbox_inches='tight')
 
@@ -187,12 +186,12 @@ def main():
     df = pd.read_parquet("data/dataset_spotify.parquet") 
     resumen_estructural(df)
     print('-'*50)
-    df, _ = descripcion_estadistica(df)
+    df, _ = descripcion_estadistica(df,var_objetivo='popularity')
     df.to_parquet("data/dataset_spotify_wo_outliers.parquet", compression='brotli')
     print('-'*50)
     variables_categoricas(df)
     print('-'*50)
-    correlations(df)
+    correlations(df, var_objetivo='popularity')
 
 
 
