@@ -12,6 +12,21 @@ SEMILLA = 42
 
 
 def __preprocessing(df:pd.DataFrame, var_objetivo: str) -> tuple:
+    """
+    Método privado para el preprocesamiento de los datos.
+
+    Parámetros
+    ----------
+    df: pd.DataFrame — El dataframe en el que se va a aplicar las trasformaciones
+    var_objetivo: str — Nombre de la variable objetivo
+
+    Retorna
+    ---------
+    df: pd.DataFrame — El dataframe con las transformaciones
+    X_train, X_test, y_train, y_test: np.array — Los conjuntos estandarizados para los parámetros y variable objetivo dividido entre Entrenamiento y Test
+
+    """
+
     # Se ve que hay un tipo booleano, que es valido para la columna 'explicit', pero se va a cambiar a int para poder tratar mejor  
     # este dato en siguientes secciones
     df['explicit'] = df['explicit'].astype(int)
