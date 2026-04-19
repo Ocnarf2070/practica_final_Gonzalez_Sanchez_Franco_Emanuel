@@ -8,6 +8,19 @@ import seaborn as sns
 SEMILLA = 42
 
 def __get_rows_cols_memory(df:pd.DataFrame):
+    """
+    Método privado para la obtención de la forma (filas y columnas) de un dataframe junto a su uso en memoria RAM.
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame —  El dataframe el cual queremos obtener las características
+
+    Retorna
+    -------
+    shape: (int, int) — La forma que tiene el dataframe
+    memory: int — La memoria RAM usada en Bytes.
+
+    """
     shape, memory = df.shape, df.memory_usage(index=False).sum() * (10**-6)
     print("Número de filas y columnas:", shape)
     print(f"Tamaño en memoria: {memory:.5f} MB")
@@ -22,7 +35,7 @@ def resumen_estructural(dataframe: pd.DataFrame):
 
     Parámetros
     ----------
-    dataframe: El dataframe el cual queremos obtener las características
+    dataframe: pd.DataFrame — El dataframe el cual queremos obtener las características
 
     """
     print("Resumen estructural")
@@ -57,16 +70,56 @@ def resumen_estructural(dataframe: pd.DataFrame):
     #Como es en columnas de variables cualitativa nominal, y es solamente 1, no se va a eliminar la fila
 
 def __type_asymmetry(asymmetry: float) -> str:
-        if asymmetry == 0: return "Simetría"
-        if asymmetry > 0: return "Asimetría positiva"
-        return "Asimetría negativa"
+    """
+    Método privado para la obtención del tipo de simetría a través de su coeficiente.
+
+    Parámetros
+    ----------
+    asymmetry: float —  El coeficiente de asimetría
+
+    Retorna
+    -------
+    str — La cadena de texto que indica que tipo de asimetría es
+
+    """
+    if asymmetry == 0: return "Simetría"
+    if asymmetry > 0: return "Asimetría positiva"
+    return "Asimetría negativa"
 
 def __type_kurtosis(kurtosis: float) -> str:
-        if kurtosis == 0: return "Curva Mesocúrtica"
-        if kurtosis > 0: return "Curva Leptocúrtica"
-        return "Curva Platicúrtica"
+    """
+    Método privado para la obtención del tipo de curtosis a través de su coeficiente.
+
+    Parámetros
+    ----------
+    kurtosis: float —  El coeficiente de curtosis
+
+    Retorna
+    -------
+    str — La cadena de texto que indica que tipo de curtosis es
+
+    """
+
+    if kurtosis == 0: return "Curva Mesocúrtica"
+    if kurtosis > 0: return "Curva Leptocúrtica"
+    return "Curva Platicúrtica"
 
 def __statistics(dataframe:pd.DataFrame, var_objetivo:str, file: str = 'output/ej1_descriptivo.csv'):
+    """
+    Método privado para la obtención de las características estadísticas: la media, la mediana, la desviación típica, Q1, Q3, minimizo
+    y máximo, el IQR de la variable objetivo y sus coeficientes de asimetría y curtosis.
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe el cual queremos obtener las características
+    var_objetivo: str — El String de la variable objetivo a analizar
+    file: str — La ruta en la que se va a guardar en formato csv los valores estadísticos.
+
+    Retorna
+    -------
+    list — Lista con las variables numéricas identificadas al hacer el describe()
+
+    """
     df_st = dataframe.describe()
     df_st.loc['median'] = np.median(dataframe[df_st.columns].values, axis=0)
     df_st.loc['variance'] = np.var(dataframe[df_st.columns].values, axis=0)
@@ -84,6 +137,20 @@ def __statistics(dataframe:pd.DataFrame, var_objetivo:str, file: str = 'output/e
 
 
 def __histogram_plot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols: int = 5, figsize:tuple = None, log_scale:bool = False, n_bins:(int|str|list)="auto"):
+    """
+    Método privado para la representación de los histogramas de las variables numéricas.
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe en donde se obtiene los datos
+    file: str — La ruta en la que se va a guardar en formato csv los valores estadísticos.
+    n_cols: int — El número de columnas que se van a crear para el subplot
+    figsize: (int,int) — Tupla que indica el tamaño de las gráficas del subplot
+    log_scale: bool — Booleano que indica si se va a realizar una escala logarítmica en el conteo
+    n_bins: (int|str|list) — El numero de barras que se va a representar en la gráfica.
+
+    """
+    
     if cols is None: cols = dataframe.columns
     n_rows = math.ceil(len(cols)/n_cols)
     fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
@@ -107,6 +174,19 @@ def __histogram_plot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols
     plt.savefig(file, dpi=300, bbox_inches='tight')
 
 def __boxplot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols: int = 5, figsize:tuple = None):
+    """
+    Método privado para la representación de los boxplots
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe en donde se obtiene los datos
+    file: str — La ruta en la que se va a guardar en formato csv los valores estadísticos.
+    cols: list(str) — Lista de los nombres de las columnas a representar
+    n_cols: int — El número de columnas que se van a crear para el subplot
+    figsize: (int,int) — Tupla que indica el tamaño de las gráficas del subplot
+
+    """
+
     if cols is None: cols = dataframe.columns
     n_rows = math.ceil(len(cols)/n_cols)
     fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
@@ -121,6 +201,19 @@ def __boxplot(dataframe:pd.DataFrame, file: str, cols:list = None, n_cols: int =
     plt.savefig(file, dpi=300, bbox_inches='tight')
 
 def __outliers(dataframe: pd.DataFrame, cols:list = None):
+    """
+    Método privado para la obtención de los outliers de un dataframe
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe en donde se obtiene los datos
+    cols: list(str) — Lista de los nombres de las columnas a representar
+
+    Retorna
+    -------
+    pd.DataFrame — Dataframe con los outliers eliminados
+
+    """
     print("Outliers")
     if cols is None: cols = dataframe.columns
     set_rows = set()
@@ -134,6 +227,20 @@ def __outliers(dataframe: pd.DataFrame, cols:list = None):
 
 
 def descripcion_estadistica(dataframe: pd.DataFrame, var_objetivo:str):
+    """
+    Obtención de los datos estadísticos de un Dataframe, con observaciones en la variable objetivo
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe el cual queremos obtener las características
+    var_objetivo: str — Nombre de la variable objetivo
+
+    Retorna
+    -------
+    dataframe: pd.DataFrame — Dataframe con los outliers eliminados
+    numeric_cols: list(str) — Lista con los nombres de las columnas numéricas
+
+    """
     print("Estadísticos descriptivos de variables numéricas")
     print("="*50)
     numeric_cols = __statistics(dataframe, var_objetivo)
@@ -143,6 +250,14 @@ def descripcion_estadistica(dataframe: pd.DataFrame, var_objetivo:str):
     return dataframe, numeric_cols
 
 def variables_categoricas(dataframe: pd.DataFrame):
+    """
+    Obtención de los datos estadísticos de un Dataframe para las variables categóricas.
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe el cual queremos obtener las características
+
+    """
     print("Análisis variables categóricas")
     df_categorical = dataframe.select_dtypes(include=['string', 'boolean'])
     print("Frecuencia absoluta y relativa")
@@ -159,6 +274,15 @@ def variables_categoricas(dataframe: pd.DataFrame):
         plt.savefig(f'output/ej1_categoricas_{col}.png', dpi=150, bbox_inches='tight')
 
 def correlations(dataframe: pd.DataFrame, var_objetivo:str):
+    """
+    Obtención de las correlaciones de un Dataset y sus relaciones con la variable objetivo
+
+    Parámetros
+    ----------
+    dataframe: pd.DataFrame — El dataframe el cual queremos obtener las características
+    var_objetivo: str — Nombre de la variable objetivo
+
+    """
     corr = dataframe.corr(numeric_only=True)
     plt.figure(figsize=(10,10))
     ax = sns.heatmap(
